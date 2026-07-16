@@ -1,5 +1,8 @@
 # Remnawave Custom 2.8.1
 
+[![Build and publish custom image](https://github.com/Ryanlyjp/remnawave-custom-deploy/actions/workflows/build-and-publish.yml/badge.svg?branch=main)](https://github.com/Ryanlyjp/remnawave-custom-deploy/actions/workflows/build-and-publish.yml)
+[![GHCR](https://img.shields.io/badge/GHCR-remnawave--custom-blue?logo=github)](https://github.com/users/Ryanlyjp/packages/container/package/remnawave-custom)
+
 这是基于官方 Remnawave `2.8.1` 维护的自研版本。部署仓库通过 Git submodule 固定前后端源码版本，并使用根目录 Dockerfile 构建单一 Remnawave 镜像。
 
 ## 仓库结构
@@ -17,21 +20,70 @@
 git clone --recurse-submodules https://github.com/Ryanlyjp/remnawave-custom-deploy.git
 ```
 
-## 发布镜像
+## Docker 镜像
 
-GitHub Actions 会在 `main` 更新、`v*` 标签推送或手动触发时构建并发布 `linux/amd64` 镜像：
+预构建镜像公开发布在 GitHub Container Registry，无需登录即可拉取：
 
 ```text
-ghcr.io/ryanlyjp/remnawave-custom:2.8.1-policy-modules
-ghcr.io/ryanlyjp/remnawave-custom:latest
-ghcr.io/ryanlyjp/remnawave-custom:sha-<commit>
+ghcr.io/ryanlyjp/remnawave-custom
 ```
 
-直接拉取稳定标签：
+当前发布平台为 `linux/amd64`。镜像包含固定版本的自研 Backend 和 Frontend，以及运行所需的 Prisma 文件、生产依赖和前端静态资源。
+
+### 镜像标签
+
+| 标签 | 用途 |
+| --- | --- |
+| `2.8.1-policy-modules` | 当前 2.8.1 自研稳定版本，推荐生产部署使用 |
+| `latest` | `main` 分支最近一次成功构建 |
+| `sha-<commit>` | 与 Deploy 仓库提交一一对应，便于回滚和审计 |
+| `v*` | 推送 Git 版本标签时生成的同名镜像标签 |
+
+拉取稳定版本：
 
 ```bash
 docker pull ghcr.io/ryanlyjp/remnawave-custom:2.8.1-policy-modules
 ```
+
+也可以固定到某个 Deploy 提交：
+
+```bash
+docker pull ghcr.io/ryanlyjp/remnawave-custom:sha-fd99975
+```
+
+生产环境如果要求镜像内容绝对不变，可以在 Compose 中使用拉取后显示的 digest：
+
+```text
+ghcr.io/ryanlyjp/remnawave-custom@sha256:<digest>
+```
+
+### 使用 Compose
+
+准备好 Remnawave 所需的真实 `.env` 后执行：
+
+```bash
+docker compose -f docker-compose.production-2.8.1.yml pull
+docker compose -f docker-compose.production-2.8.1.yml up -d
+```
+
+更新到稳定标签的最新镜像：
+
+```bash
+docker compose -f docker-compose.production-2.8.1.yml pull remnawave
+docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
+```
+
+升级前请先备份数据库、`.env` 和 Compose 文件。
+
+### 自动构建
+
+工作流 `.github/workflows/build-and-publish.yml` 会在以下情况构建并推送镜像：
+
+- `main` 分支更新
+- 推送 `v*` Git 标签
+- 在 GitHub Actions 页面手动触发
+
+每个镜像都记录 Backend commit、Frontend commit、Deploy revision 和构建时间，并发布 OCI provenance 与 SBOM。发布过程只使用仓库自带的 `GITHUB_TOKEN`，不需要 DockerHub Token 或生产环境密钥。
 
 ## 自研功能
 
