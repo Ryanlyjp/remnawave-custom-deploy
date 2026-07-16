@@ -42,7 +42,7 @@ FROM node:24.18-trixie-slim
 LABEL org.opencontainers.image.title="Remnawave Custom"
 LABEL org.opencontainers.image.description="Remnawave with local policy modules and controlled compatibility patches"
 LABEL org.opencontainers.image.source="https://github.com/Ryanlyjp/remnawave-custom-deploy"
-LABEL org.opencontainers.image.licenses="AGPL-3.0"
+LABEL org.opencontainers.image.licenses="AGPL-3.0-only"
 
 WORKDIR /opt/app
 
