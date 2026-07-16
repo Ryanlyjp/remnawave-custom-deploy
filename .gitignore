@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.custom.example
+
+*.tar
+*.tar.gz
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+backups/
+legacy-worktree-notes.md
+backend/frontend_local_dist/

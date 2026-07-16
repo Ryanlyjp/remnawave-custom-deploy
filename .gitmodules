@@ -1,0 +1,8 @@
+[submodule "backend"]
+	path = backend
+	url = https://github.com/Ryanlyjp/remnawave-backend-custom.git
+	branch = main
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/Ryanlyjp/remnawave-frontend-custom.git
+	branch = main

@@ -1,0 +1,10 @@
+.git
+**/.git
+**/node_modules
+**/dist
+**/.env
+**/.DS_Store
+backend/frontend_local_dist
+*.tar
+*.tar.gz
+legacy-worktree-notes.md
