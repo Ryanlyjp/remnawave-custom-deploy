@@ -17,6 +17,22 @@
 git clone --recurse-submodules https://github.com/Ryanlyjp/remnawave-custom-deploy.git
 ```
 
+## 发布镜像
+
+GitHub Actions 会在 `main` 更新、`v*` 标签推送或手动触发时构建并发布 `linux/amd64` 镜像：
+
+```text
+ghcr.io/ryanlyjp/remnawave-custom:2.8.1-policy-modules
+ghcr.io/ryanlyjp/remnawave-custom:latest
+ghcr.io/ryanlyjp/remnawave-custom:sha-<commit>
+```
+
+直接拉取稳定标签：
+
+```bash
+docker pull ghcr.io/ryanlyjp/remnawave-custom:2.8.1-policy-modules
+```
+
 ## 自研功能
 
 策略模块已适配 Remnawave 2.8.1 的 API、缓存和前端编辑器：

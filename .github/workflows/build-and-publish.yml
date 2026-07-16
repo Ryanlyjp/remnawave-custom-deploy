@@ -1,0 +1,86 @@
+name: Build and publish custom image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: custom-image-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/ryanlyjp/remnawave-custom
+
+jobs:
+  build-and-publish:
+    name: Build and publish linux/amd64
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out deployment repository and source submodules
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Collect source metadata
+        id: source
+        shell: bash
+        run: |
+          {
+            echo "backend_commit=$(git -C backend rev-parse HEAD)"
+            echo "frontend_commit=$(git -C frontend rev-parse HEAD)"
+            echo "build_time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=2.8.1-policy-modules
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short,prefix=sha-
+            type=ref,event=tag
+
+      - name: Build and publish image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BRANCH=${{ github.ref_name }}
+            __RW_METADATA_VERSION=2.8.1-custom
+            __RW_METADATA_GIT_BACKEND_COMMIT=${{ steps.source.outputs.backend_commit }}
+            __RW_METADATA_GIT_FRONTEND_COMMIT=${{ steps.source.outputs.frontend_commit }}
+            __RW_METADATA_GIT_BRANCH=${{ github.ref_name }}
+            __RW_METADATA_BUILD_TIME=${{ steps.source.outputs.build_time }}
+            __RW_METADATA_BUILD_NUMBER=${{ github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: mode=max
+          sbom: true

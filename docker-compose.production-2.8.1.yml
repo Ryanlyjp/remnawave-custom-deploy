@@ -19,7 +19,7 @@ x-env: &env
 
 services:
   remnawave:
-    image: remnawave/backend:custom-2.8.1-policy-modules
+    image: ghcr.io/ryanlyjp/remnawave-custom:2.8.1-policy-modules
     container_name: remnawave
     hostname: remnawave
     <<: [*common, *logging, *env]
