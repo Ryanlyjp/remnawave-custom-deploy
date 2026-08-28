@@ -95,8 +95,10 @@ docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
 - 后端生成配置时展开策略模块
 - 前端增加独立的“策略模块”页面和创建、编辑界面
 - Monaco/Xray WASM 校验前展开模块
+- 支持为单个用户设置订阅节点名称，不修改全局 Host 名称
 
 后端数据结构见 `backend/docs/policy-modules.md`。
+用户级节点别名的使用、接口和回滚说明见 [`docs/user-host-aliases.md`](docs/user-host-aliases.md)。
 
 ## 可选兼容配置
 
