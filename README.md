@@ -93,6 +93,7 @@ docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
 - 支持 `outbound-set`、`routing-rule-set`、`balancer-set`
 - Config Profile 可组合出站、路由规则和 balancer 模块
 - 后端生成配置时展开策略模块
+- 策略模块新增、修改或删除后，只自动重新下发引用它的 Config Profile
 - 前端增加独立的“策略模块”页面和创建、编辑界面
 - Monaco/Xray WASM 校验前展开模块
 - 支持为单个用户设置订阅节点名称，不修改全局 Host 名称
