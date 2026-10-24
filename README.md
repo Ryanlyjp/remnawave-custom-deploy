@@ -100,6 +100,7 @@ docker compose -f docker-compose.production-3.4.7.yml up -d remnawave
 - 支持为单个用户设置订阅节点名称，不修改全局 Host 名称
 - Config Profile 可选择 Xray 或 Sing-box，两种引擎只显示各自的规则模块
 - Sing-box Profile 可管理固定 TUIC UUID/密码，并在保存后经受保护 Agent 校验和下发
+- 主控健康检查在旧 Node 不支持完整 system stats 时回退到 Xray healthcheck，不要求同步升级现有 Node/Xray
 
 后端数据结构见 `backend/docs/policy-modules.md`。
 用户级节点别名的使用、接口和回滚说明见 [`docs/user-host-aliases.md`](docs/user-host-aliases.md)。
