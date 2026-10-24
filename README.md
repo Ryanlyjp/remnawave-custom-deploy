@@ -98,7 +98,7 @@ docker compose -f docker-compose.production-3.4.7.yml up -d remnawave
 - 前端增加独立的“策略模块”页面和创建、编辑界面
 - Monaco/Xray WASM 校验前展开模块
 - 支持为单个用户设置订阅节点名称，不修改全局 Host 名称
-- Config Profile 可选择 Xray 或 Sing-box，两种引擎只显示各自的规则模块
+- Config Profile 可选择 Xray 或 Sing-box，两种引擎只显示并应用各自的规则模块，同名模块不会跨引擎覆盖
 - Sing-box Profile 可管理固定 TUIC UUID/密码，并在保存后经受保护 Agent 校验和下发
 - 主控健康检查在旧 Node 不支持完整 system stats 时回退到 Xray healthcheck，不要求同步升级现有 Node/Xray
 
