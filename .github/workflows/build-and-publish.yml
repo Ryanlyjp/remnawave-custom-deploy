@@ -58,7 +58,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=2.8.1-policy-modules
+            type=raw,value=3.4.7-managed-tuic
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short,prefix=sha-
             type=ref,event=tag
@@ -78,7 +78,7 @@ jobs:
             org.opencontainers.image.licenses=AGPL-3.0-only
           build-args: |
             BRANCH=${{ github.ref_name }}
-            __RW_METADATA_VERSION=2.8.1-custom
+            __RW_METADATA_VERSION=3.4.7-custom
             __RW_METADATA_GIT_BACKEND_COMMIT=${{ steps.source.outputs.backend_commit }}
             __RW_METADATA_GIT_FRONTEND_COMMIT=${{ steps.source.outputs.frontend_commit }}
             __RW_METADATA_GIT_BRANCH=${{ github.ref_name }}

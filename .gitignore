@@ -13,3 +13,5 @@ backups/
 legacy-worktree-notes.md
 progress.md
 backend/frontend_local_dist/
+__pycache__/
+*.pyc

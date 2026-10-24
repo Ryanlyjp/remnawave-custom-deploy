@@ -1,0 +1,21 @@
+[Unit]
+Description=Managed Sing-box configuration agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/sing-box/config-agent.env
+ExecStart=/usr/local/libexec/singbox-config-agent
+Restart=on-failure
+RestartSec=3
+User=root
+Group=root
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/etc/sing-box
+
+[Install]
+WantedBy=multi-user.target

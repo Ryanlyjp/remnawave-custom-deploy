@@ -1,17 +1,18 @@
-# Remnawave Custom 2.8.1
+# Remnawave Custom 3.4.7
 
 [![Build and publish custom image](https://github.com/Ryanlyjp/remnawave-custom-deploy/actions/workflows/build-and-publish.yml/badge.svg?branch=main)](https://github.com/Ryanlyjp/remnawave-custom-deploy/actions/workflows/build-and-publish.yml)
 [![GHCR](https://img.shields.io/badge/GHCR-remnawave--custom-blue?logo=github)](https://github.com/users/Ryanlyjp/packages/container/package/remnawave-custom)
 
-这是基于官方 Remnawave `2.8.1` 维护的自研版本。部署仓库通过 Git submodule 固定前后端源码版本，并使用根目录 Dockerfile 构建单一 Remnawave 镜像。
+这是基于官方 Remnawave `3.4.7` 维护的自研版本。部署仓库通过 Git submodule 固定前后端源码版本，并使用根目录 Dockerfile 构建单一 Remnawave 镜像。控制面升级不要求同步升级现有 Remnawave Node 或其 Xray Core。
 
 ## 仓库结构
 
-- `backend/`：自研 Backend，基于官方 Backend `2.8.1`
-- `frontend/`：自研 Frontend，基于官方 Frontend `2.8.1`
+- `backend/`：自研 Backend，基于官方 Backend `3.4.7`
+- `frontend/`：自研 Frontend，基于官方 Frontend `3.4.7`
 - `Dockerfile`：从固定的前后端源码构建单一镜像
 - `docker-compose.build.yml`：构建本地自研镜像
-- `docker-compose.production-2.8.1.yml`：生产部署参考 Compose
+- `docker-compose.production-3.4.7.yml`：生产部署参考 Compose
+- `singbox-agent/`：在外部 Sing-box 主机上安全校验、替换并回滚配置的最小 Agent
 - `.env.custom.example`：自研兼容功能的安全默认配置
 
 克隆时需要同时获取 submodule：
@@ -34,7 +35,7 @@ ghcr.io/ryanlyjp/remnawave-custom
 
 | 标签 | 用途 |
 | --- | --- |
-| `2.8.1-policy-modules` | 当前 2.8.1 自研稳定版本，推荐生产部署使用 |
+| `3.4.7-managed-tuic` | 当前 3.4.7 自研稳定版本，包含受管 Sing-box/TUIC Profile |
 | `latest` | `main` 分支最近一次成功构建 |
 | `sha-<commit>` | 与 Deploy 仓库提交一一对应，便于回滚和审计 |
 | `v*` | 推送 Git 版本标签时生成的同名镜像标签 |
@@ -42,7 +43,7 @@ ghcr.io/ryanlyjp/remnawave-custom
 拉取稳定版本：
 
 ```bash
-docker pull ghcr.io/ryanlyjp/remnawave-custom:2.8.1-policy-modules
+docker pull ghcr.io/ryanlyjp/remnawave-custom:3.4.7-managed-tuic
 ```
 
 也可以固定到某个 Deploy 提交：
@@ -62,15 +63,15 @@ ghcr.io/ryanlyjp/remnawave-custom@sha256:<digest>
 准备好 Remnawave 所需的真实 `.env` 后执行：
 
 ```bash
-docker compose -f docker-compose.production-2.8.1.yml pull
-docker compose -f docker-compose.production-2.8.1.yml up -d
+docker compose -f docker-compose.production-3.4.7.yml pull
+docker compose -f docker-compose.production-3.4.7.yml up -d
 ```
 
 更新到稳定标签的最新镜像：
 
 ```bash
-docker compose -f docker-compose.production-2.8.1.yml pull remnawave
-docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
+docker compose -f docker-compose.production-3.4.7.yml pull remnawave
+docker compose -f docker-compose.production-3.4.7.yml up -d remnawave
 ```
 
 升级前请先备份数据库、`.env` 和 Compose 文件。
@@ -87,7 +88,7 @@ docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
 
 ## 自研功能
 
-策略模块已适配 Remnawave 2.8.1 的 API、缓存和前端编辑器：
+策略模块已适配 Remnawave 3.4.7 的 API、缓存和前端编辑器：
 
 - Snippet 增加 `kind`、`scope`、`description`
 - 支持 `outbound-set`、`routing-rule-set`、`balancer-set`
@@ -97,6 +98,8 @@ docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
 - 前端增加独立的“策略模块”页面和创建、编辑界面
 - Monaco/Xray WASM 校验前展开模块
 - 支持为单个用户设置订阅节点名称，不修改全局 Host 名称
+- Config Profile 可选择 Xray 或 Sing-box，两种引擎只显示各自的规则模块
+- Sing-box Profile 可管理固定 TUIC UUID/密码，并在保存后经受保护 Agent 校验和下发
 
 后端数据结构见 `backend/docs/policy-modules.md`。
 用户级节点别名的使用、接口和回滚说明见 [`docs/user-host-aliases.md`](docs/user-host-aliases.md)。
@@ -111,6 +114,7 @@ docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
 | `CUSTOM_START_XRAY_DIAGNOSTICS` | `false` | 记录 StartXray 的错误码、HTTP 状态和响应数据，不记录 headers |
 | `CUSTOM_SUBSCRIPTION_ADDRESS_OVERRIDES` | `{}` | 用 JSON 对象按用户名替换订阅节点地址 |
 | `CUSTOM_TUIC_SUBSCRIPTION_LINKS` | `[]` | 把固定共享凭据的 `tuic://` 链接追加到已获准的 Base64 订阅与连接密钥列表；不下发到 Node Agent |
+| `CUSTOM_SINGBOX_TARGETS` | `[]` | 按 Profile 名称指定外部 Sing-box Agent；可用无凭据 `subscriptionUrl` 从 Profile 当前 UUID/密码生成共享 TUIC 链接 |
 
 地址覆盖示例：
 
@@ -124,7 +128,19 @@ CUSTOM_SUBSCRIPTION_ADDRESS_OVERRIDES={"example-user":"proxy.example.com"}
 CUSTOM_TUIC_SUBSCRIPTION_LINKS=["tuic://uuid:password@tuic.example.com:443?alpn=h3&sni=tuic.example.com#Example-TUIC"]
 ```
 
-该配置不会让 Remnawave 控制 TUIC 服务、统计其流量或按用户生成凭据。链接中的名称可沿用现有客户端分组规则；真实凭据只能放在生产 `.env`，不得提交到仓库。
+`CUSTOM_TUIC_SUBSCRIPTION_LINKS` 不会让 Remnawave 控制 TUIC 服务、统计其流量或按用户生成凭据。链接中的名称可沿用现有客户端分组规则；真实凭据只能放在生产 `.env`，不得提交到仓库。
+
+### 受管 Sing-box/TUIC
+
+每个 Sing-box Profile 使用独立的 Sing-box JSON，并可引用同引擎的出站和路由规则模块。保存 Profile，或新增、修改、删除其引用的 Sing-box 规则模块时，Backend 会把展开后的配置发送给对应 Agent；Agent 先运行 `sing-box check`，再原子替换配置并重启服务，失败时恢复上一份配置。
+
+主控 `.env` 示例：
+
+```env
+CUSTOM_SINGBOX_TARGETS=[{"profileName":"LAX-TUIC","url":"http://100.64.0.10:18080","token":"replace-with-a-random-32-character-token","subscriptionUrl":"tuic://tuic.example.com:443?alpn=h3&sni=tuic.example.com#Example-TUIC"}]
+```
+
+在目标主机安装 `singbox-agent/singbox_config_agent.py` 与 systemd unit，按 `config-agent.env.example` 配置 Tailscale 监听地址、目标配置和服务名。防火墙只允许 Remnawave 主控的 Tailscale IP 访问 Agent 端口。`subscriptionUrl` 只能包含公开端点、连接参数与节点名，凭据由对应 Profile 注入；Agent token、TUIC UUID、密码和证书均不得提交到仓库。
 
 不要把真实 `.env`、订阅链接、节点凭据或数据库备份提交到仓库。
 
@@ -140,7 +156,7 @@ docker compose -f docker-compose.build.yml build
 也可以直接构建：
 
 ```bash
-docker build -t remnawave/backend:custom-2.8.1-policy-modules .
+docker build -t remnawave/backend:custom-3.4.7-managed-tuic .
 ```
 
 Frontend 官方 lockfile 使用原有 peer dependency 模式，根目录 Dockerfile 已使用 `npm ci --legacy-peer-deps`。

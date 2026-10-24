@@ -1,14 +1,14 @@
 services:
   remnawave-custom:
-    image: remnawave/backend:custom-2.8.1-policy-modules
+    image: remnawave/backend:custom-3.4.7-managed-tuic
     build:
       context: .
       dockerfile: Dockerfile
       args:
         BRANCH: main
-        __RW_METADATA_VERSION: 2.8.1-custom
+        __RW_METADATA_VERSION: 3.4.7-custom
         __RW_METADATA_GIT_BACKEND_COMMIT: ${BACKEND_COMMIT:-unknown}
         __RW_METADATA_GIT_FRONTEND_COMMIT: ${FRONTEND_COMMIT:-unknown}
-        __RW_METADATA_GIT_BRANCH: custom/2.8.1-policy-modules
+        __RW_METADATA_GIT_BRANCH: custom/3.4.7-managed-tuic
         __RW_METADATA_BUILD_TIME: ${BUILD_TIME:-unknown}
         __RW_METADATA_BUILD_NUMBER: ${BUILD_NUMBER:-0}
