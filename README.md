@@ -110,12 +110,21 @@ docker compose -f docker-compose.production-2.8.1.yml up -d remnawave
 | `CUSTOM_ALLOW_ADMIN_JWT_API` | `false` | 允许管理员 JWT 在缺少浏览器客户端标识时访问 API；优先使用 scoped API token |
 | `CUSTOM_START_XRAY_DIAGNOSTICS` | `false` | 记录 StartXray 的错误码、HTTP 状态和响应数据，不记录 headers |
 | `CUSTOM_SUBSCRIPTION_ADDRESS_OVERRIDES` | `{}` | 用 JSON 对象按用户名替换订阅节点地址 |
+| `CUSTOM_TUIC_SUBSCRIPTION_LINKS` | `[]` | 把固定共享凭据的 `tuic://` 链接追加到已获准的 Base64 订阅与连接密钥列表；不下发到 Node Agent |
 
 地址覆盖示例：
 
 ```env
 CUSTOM_SUBSCRIPTION_ADDRESS_OVERRIDES={"example-user":"proxy.example.com"}
 ```
+
+固定 TUIC 链接示例：
+
+```env
+CUSTOM_TUIC_SUBSCRIPTION_LINKS=["tuic://uuid:password@tuic.example.com:443?alpn=h3&sni=tuic.example.com#Example-TUIC"]
+```
+
+该配置不会让 Remnawave 控制 TUIC 服务、统计其流量或按用户生成凭据。链接中的名称可沿用现有客户端分组规则；真实凭据只能放在生产 `.env`，不得提交到仓库。
 
 不要把真实 `.env`、订阅链接、节点凭据或数据库备份提交到仓库。
 
