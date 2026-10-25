@@ -97,7 +97,7 @@ docker compose -f docker-compose.production-3.4.7.yml up -d remnawave
 - 策略模块新增、修改或删除后，只自动重新下发引用它的 Config Profile
 - 前端增加独立的“策略模块”页面和创建、编辑界面
 - Monaco/Xray WASM 校验前展开模块
-- 支持为单个用户设置订阅节点名称，不修改全局 Host 名称
+- 支持为单个用户设置 Host 和受管 TUIC 的订阅节点名称，不修改全局名称或连接参数
 - Config Profile 可选择 Xray 或 Sing-box，两种引擎只显示并应用各自的规则模块，同名模块不会跨引擎覆盖
 - Sing-box Profile 可管理固定 TUIC UUID/密码，并在保存后经受保护 Agent 校验和下发
 - 主控健康检查在旧 Node 不支持完整 system stats 时回退到 Xray healthcheck，不要求同步升级现有 Node/Xray
@@ -115,7 +115,7 @@ docker compose -f docker-compose.production-3.4.7.yml up -d remnawave
 | `CUSTOM_START_XRAY_DIAGNOSTICS` | `false` | 记录 StartXray 的错误码、HTTP 状态和响应数据，不记录 headers |
 | `CUSTOM_SUBSCRIPTION_ADDRESS_OVERRIDES` | `{}` | 用 JSON 对象按用户名替换订阅节点地址 |
 | `CUSTOM_TUIC_SUBSCRIPTION_LINKS` | `[]` | 把固定共享凭据的 `tuic://` 链接追加到已获准的 Base64 订阅与连接密钥列表；不下发到 Node Agent |
-| `CUSTOM_SINGBOX_TARGETS` | `[]` | 按 Profile 名称指定外部 Sing-box Agent；可用无凭据 `subscriptionUrl` 从 Profile 当前 UUID/密码生成共享 TUIC 链接 |
+| `CUSTOM_SINGBOX_TARGETS` | `[]` | 按 Profile 名称指定外部 Sing-box Agent；可生成共享 TUIC 链接，并按 Host UUID 设置相对顺序 |
 
 地址覆盖示例：
 
@@ -138,10 +138,12 @@ CUSTOM_TUIC_SUBSCRIPTION_LINKS=["tuic://uuid:password@tuic.example.com:443?alpn=
 主控 `.env` 示例：
 
 ```env
-CUSTOM_SINGBOX_TARGETS=[{"profileName":"LAX-TUIC","url":"http://100.64.0.10:18080","token":"replace-with-a-random-32-character-token","subscriptionUrl":"tuic://tuic.example.com:443?alpn=h3&sni=tuic.example.com#Example-TUIC"}]
+CUSTOM_SINGBOX_TARGETS=[{"profileName":"LAX-TUIC","url":"http://100.64.0.10:18080","token":"replace-with-a-random-32-character-token","subscriptionUrl":"tuic://tuic.example.com:443?alpn=h3&sni=tuic.example.com#Example-TUIC","insertAfterHostUuid":"00000000-0000-4000-8000-000000000000"}]
 ```
 
 在目标主机安装 `singbox-agent/singbox_config_agent.py` 与 systemd unit，按 `config-agent.env.example` 配置 Tailscale 监听地址、目标配置和服务名。防火墙只允许 Remnawave 主控的 Tailscale IP 访问 Agent 端口。`subscriptionUrl` 只能包含公开端点、连接参数与节点名，凭据由对应 Profile 注入；Agent token、TUIC UUID、密码和证书均不得提交到仓库。
+
+每个目标最多设置一个 `insertBeforeHostUuid` 或 `insertAfterHostUuid`。目标 Host 对当前用户不可见时，该 TUIC 节点会回退到订阅末尾；用户级 TUIC 别名会覆盖 `subscriptionUrl` 中的默认名称，但不会改变 Profile 凭据或全局名称。
 
 不要把真实 `.env`、订阅链接、节点凭据或数据库备份提交到仓库。
 
